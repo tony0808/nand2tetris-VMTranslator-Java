@@ -3,6 +3,8 @@ package parser;
 import specs.CommandSpecManager;
 import specs.CommandSpecManager.ArithmeticType;
 import specs.CommandSpecManager.CommandType;
+import specs.CommandSpecManager.SegmentType;
+import specs.CommandSpecManager.StackOperationType;
 import utility.Utility;
 
 public class Parser {
@@ -54,6 +56,14 @@ public class Parser {
 		return CommandSpecManager.getArithmeticType(command);
 	}
 	
+	public SegmentType getSegmentType() {
+		return CommandSpecManager.getSegmentType(memSegment);
+	}
+	
+	public StackOperationType getStackOperationType() {
+		return CommandSpecManager.getStackOperationType(memOperation);
+	}
+	
 	private boolean isArithmetic() {
 		return CommandSpecManager.isArithmeticOperationValid(command);
 	}
@@ -91,7 +101,7 @@ public class Parser {
 		return command.length() == 0;
 	}
 	
-	private long getCommandLine() {
+	public long getCommandLine() {
 		return commandLine;
 	}
 }

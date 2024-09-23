@@ -98,6 +98,80 @@ public class AssemblyEncoder {
 		return encoded;
 	}
 	
+	public String getPopLocalEncoding() {
+		return getStandardPopSegmentEncoding("LCL");
+	}
+	
+	public String getPopArgumentEncoding() {
+		return getStandardPopSegmentEncoding("ARG");
+	}
+	
+	public String getPopThisEncoding() {
+		return getStandardPopSegmentEncoding("THIS");
+	}
+	
+	public String getPopThatEncoding() {
+		return getStandardPopSegmentEncoding("THAT");
+	}
+	
+	public String getPopStaticEncoding(String fileName) {
+		StringBuilder encoded = new StringBuilder("");
+		String staticSegmentIndex = fileName + "." + segmentIndex;
+		
+		encoded.append("//").append("pop ").append("static ").append(segmentIndex).append("\n");
+		encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
+		encoded.append("D=A\n");
+		encoded.append("@").append(staticSegmentIndex).append("\n");
+		encoded.append("D=D+A\n");
+		encoded.append("@R13\n");
+		encoded.append("M=D\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@R13\n");
+		encoded.append("A=M\n");
+		encoded.append("M=D\n");
+		
+		return encoded.toString();
+	}
+	
+	public String getPopPointerEncoding() throws InvalidPointerSegmentIndexException {
+		String encoded = null;
+		switch(Integer.valueOf(segmentIndex)) {
+			case 0: encoded = _getPopPointerEncoding("THIS"); break;
+			case 1: encoded = _getPopPointerEncoding("THAT"); break;
+			default: throw new InvalidPointerSegmentIndexException("Invalid pointer segment index");
+		}
+		return encoded;
+	}
+	
+	public String getPopTempEncoding() throws InvalidTempSegmentIndexException {
+		StringBuilder encoded = new StringBuilder("");
+		int index = Integer.valueOf(segmentIndex);
+		
+		if(index < 0 || index > 7) { throw new InvalidTempSegmentIndexException("Invalid temp segment index"); }
+		
+		encoded.append("//").append("pop ").append("temp ").append(segmentIndex).append("\n");
+		encoded.append("@").append(TEMP_SEGMENT_BASE_ADDRESS).append("\n");
+		encoded.append("D=A\n");
+		encoded.append("@").append(segmentIndex).append("\n");
+		encoded.append("D=D+A\n");
+		encoded.append("@R13\n");
+		encoded.append("M=D\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@R13\n");
+		encoded.append("A=M\n");
+		encoded.append("M=D\n");
+		
+		return encoded.toString();
+	}
+	
 	private String getStandardPushSegmentEncoding(String segment) {
 		StringBuilder encoded = new StringBuilder("");
 		
@@ -128,6 +202,43 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
+		
+		return encoded.toString();
+	}
+	
+	private String _getPopPointerEncoding(String segment) {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("//").append("pop ").append("pointer ").append(segment.equals("THIS")? "0" : "1").append("\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@").append(segment).append("\n");
+		encoded.append("M=D\n");
+		
+		return encoded.toString();
+	}
+	
+	private String getStandardPopSegmentEncoding(String segment) {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("//").append("pop ").append(getSegmentName(segment)).append(" ").append(segmentIndex).append("\n");
+		encoded.append("@").append(segment).append("\n");
+		encoded.append("D=M\n");
+		encoded.append("@").append(segmentIndex).append("\n");
+		encoded.append("D=D+A\n");
+		encoded.append("@R13\n");
+		encoded.append("M=D\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@R13\n");
+		encoded.append("A=M\n");
+		encoded.append("M=D\n");
 		
 		return encoded.toString();
 	}

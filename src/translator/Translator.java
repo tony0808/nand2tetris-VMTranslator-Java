@@ -71,29 +71,35 @@ public class Translator {
 			case THAT:	 	encoding = encoder.getPushThisEncoding(); 		break;
 			case THIS: 		encoding = encoder.getPushThatEncoding(); 		break;
 			case CONSTANT:  encoding = encoder.getPushConstantEncoding(); 	break;
-			case POINTER: 	encoding = handlePointerSegmentCase();			break;
-			case STATIC:	encoding = handleStaticSegmentCase(); 			break;
-			case TEMP: 	 	encoding = handleTempSegmentCase(); 			break;
+			case POINTER: 	encoding = handlePushPointerSegmentCase();		break;
+			case STATIC:	encoding = handlePushStaticSegmentCase(); 		break;
+			case TEMP: 	 	encoding = handlePushTempSegmentCase(); 		break;
 			default:   		ErrorHandler.exitErrorWithLineInfo("Uknown segment type", parser.getCommandLine());
 		}
 		writer.writeLine(encoding);
 	}
 	
 	private void handleStackPopOperation() {
+		String encoding = null;
+		String index = String.valueOf(parser.getSegmentIndex());
+		
+		encoder.setSegmentIndex(index);
+		
 		switch(parser.getSegmentType()) {
-			case ARGUMENT:  break;
+			case LOCAL: 	encoding = encoder.getPopLocalEncoding(); 		break;
+			case ARGUMENT:  encoding = encoder.getPopArgumentEncoding(); 	break;
+			case THAT:	 	encoding = encoder.getPopThatEncoding(); 		break;
+			case THIS: 		encoding = encoder.getPopThisEncoding(); 		break;
 			case CONSTANT:  break;
-			case LOCAL: 	break;
-			case POINTER: 	break;
-			case STATIC:	break;
-			case TEMP: 	 	break;
-			case THAT:	 	break;
-			case THIS: 		break;
+			case POINTER: 	encoding = handlPopPointerSegmentCase(); 		break;
+			case STATIC:	encoding = handlePopStaticSegmentCase(); 		break;
+			case TEMP: 	 	encoding = handlePopTempSegmentCase();	 		break;
 			default:   		ErrorHandler.exitErrorWithLineInfo("Uknown segment type", parser.getCommandLine());
 		}
+		writer.writeLine(encoding);
 	}
 	
-	private String handlePointerSegmentCase() {
+	private String handlePushPointerSegmentCase() {
 		String encoding = null;
 		try {
 			encoding = encoder.getPushPointerEncoding(); 
@@ -103,7 +109,17 @@ public class Translator {
 		return encoding;
 	}
 	
-	private String handleStaticSegmentCase() {
+	private String handlPopPointerSegmentCase() {
+		String encoding = null;
+		try {
+			encoding = encoder.getPopPointerEncoding();
+		} catch(InvalidPointerSegmentIndexException e) {
+			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
+		}
+		return encoding;
+	}
+	
+	private String handlePushStaticSegmentCase() {
 		String encoding = null;
 		String fileName = writer.getFileNameWithoutExtension();
 		
@@ -112,10 +128,29 @@ public class Translator {
 		return encoding;
 	}
 	
-	private String handleTempSegmentCase() {
+	private String handlePopStaticSegmentCase() {
+		String encoding = null;
+		String fileName = writer.getFileNameWithoutExtension();
+		
+		encoding = encoder.getPopStaticEncoding(fileName);
+		
+		return encoding;
+	}
+	
+	private String handlePushTempSegmentCase() {
 		String encoding = null;
 		try {
 			encoding = encoder.getPushTempEncoding();
+		} catch (InvalidTempSegmentIndexException e) {
+			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
+		}
+		return encoding;
+	}
+	
+	private String handlePopTempSegmentCase() {
+		String encoding = null;
+		try {
+			encoding = encoder.getPopTempEncoding();
 		} catch (InvalidTempSegmentIndexException e) {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}

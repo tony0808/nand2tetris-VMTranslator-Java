@@ -37,18 +37,21 @@ public class Translator {
 	}
 	
 	private void handleArithmeticCommand() {
+		String encoding = null;
+		
 		switch(parser.getArithmeticType()) {
-			case ADD: writer.writeLine("and");break;
-			case SUB: writer.writeLine("sub");break;
-			case OR: writer.writeLine("or");break;
-			case NOT: writer.writeLine("not");break;
-			case AND:writer.writeLine("and"); break;
-			case LT: writer.writeLine("lt");break;
-			case GT: writer.writeLine("gt");break;
-			case NEQ:writer.writeLine("neg"); break;
-			case EQ: writer.writeLine("eq");break;
-			default: ErrorHandler.exitErrorWithLineInfo("Uknown arithmetic type", parser.getCommandLine());
+			case ADD: 	encoding = encoder.getAddOperationEncoding(); 		break;
+			case SUB: 	encoding = encoder.getSubOperationEncoding(); 		break;
+			case OR:  	encoding = encoder.getOrOperationEncoding(); 		break;
+			case NOT: 	encoding = encoder.getNotOperationEncoding(); 		break;
+			case AND: 	encoding = encoder.getAndOperationEncoding(); 		break;
+			case LT:  	encoding = encoder.getLessThankEncoding();			break;
+			case GT:	encoding = encoder.getGreatherThanEncoding(); 		break;
+			case NEQ: 	encoding = encoder.getNegativeOperationEncoding();  break;
+			case EQ: 	encoding = encoder.getEqualsEncoding();				break;
+			default: 	ErrorHandler.exitErrorWithLineInfo("Uknown arithmetic type", parser.getCommandLine());
 		}
+		writer.writeLine(encoding);
 	}
 	
 	private void handleMemoryAccessCommand() {
@@ -68,8 +71,8 @@ public class Translator {
 		switch(parser.getSegmentType()) {
 			case LOCAL: 	encoding = encoder.getPushLocalEncoding(); 		break;
 			case ARGUMENT:  encoding = encoder.getPushArgumentEncoding();	break;
-			case THAT:	 	encoding = encoder.getPushThisEncoding(); 		break;
-			case THIS: 		encoding = encoder.getPushThatEncoding(); 		break;
+			case THAT:	 	encoding = encoder.getPushThatEncoding(); 		break;
+			case THIS: 		encoding = encoder.getPushThisEncoding(); 		break;
 			case CONSTANT:  encoding = encoder.getPushConstantEncoding(); 	break;
 			case POINTER: 	encoding = handlePushPointerSegmentCase();		break;
 			case STATIC:	encoding = handlePushStaticSegmentCase(); 		break;

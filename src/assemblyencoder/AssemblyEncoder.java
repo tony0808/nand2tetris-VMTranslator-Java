@@ -1,5 +1,7 @@
 package assemblyencoder;
 
+import java.util.HashMap;
+
 import exception.InvalidPointerSegmentIndexException;
 import exception.InvalidTempSegmentIndexException;
 
@@ -7,8 +9,17 @@ public class AssemblyEncoder {
 	
 	private static final int STATIC_SEGMENT_BASE_ADDRESS = 16;
 	private static final int TEMP_SEGMENT_BASE_ADDRESS = 5;
+	private static final int PTR_SEGMENT_BASE_ADDRESS = 3;
 	
 	private String segmentIndex;
+	
+	private HashMap<String, String> binaryOperationsMap;
+	private HashMap<String, String> binaryComparisonMap;
+	
+	public AssemblyEncoder() {
+		initializeBinaryOperationsMap();
+		initializeBinaryComparisonMap();
+	}
 	
 	public void setSegmentIndex(String segmentIndex) {
 		this.segmentIndex = segmentIndex;
@@ -34,7 +45,7 @@ public class AssemblyEncoder {
 		StringBuilder encoded = new StringBuilder("");
 		String staticSegmentIndex = fileName + "." + segmentIndex;	
 		
-		encoded.append("//").append("push ").append("static ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("push ").append("static ").append(segmentIndex).append("\n");
 		encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
 		encoded.append("D=A\n");
 		encoded.append("@").append(staticSegmentIndex).append("\n");
@@ -44,7 +55,6 @@ public class AssemblyEncoder {
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
-		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
 		
 		return encoded.toString();
@@ -56,7 +66,7 @@ public class AssemblyEncoder {
 		
 		if(index < 0 || index > 7) { throw new InvalidTempSegmentIndexException("Invalid temp segment index"); }
 		
-		encoded.append("//").append("push ").append("temp ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("push ").append("temp ").append(segmentIndex).append("\n");
 		encoded.append("@").append(TEMP_SEGMENT_BASE_ADDRESS).append("\n");
 		encoded.append("D=A\n");
 		encoded.append("@").append(segmentIndex).append("\n");
@@ -66,7 +76,6 @@ public class AssemblyEncoder {
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
-		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
 		
 		return encoded.toString();
@@ -75,14 +84,13 @@ public class AssemblyEncoder {
 	public String getPushConstantEncoding() {
 		StringBuilder encoded = new StringBuilder("");
 		
-		encoded.append("//").append("push ").append("constant ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("push ").append("constant ").append(segmentIndex).append("\n");
 		encoded.append("@").append(segmentIndex).append("\n");
 		encoded.append("D=A\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
-		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
 		
 		return encoded.toString();
@@ -118,7 +126,7 @@ public class AssemblyEncoder {
 		StringBuilder encoded = new StringBuilder("");
 		String staticSegmentIndex = fileName + "." + segmentIndex;
 		
-		encoded.append("//").append("pop ").append("static ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("pop ").append("static ").append(segmentIndex).append("\n");
 		encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
 		encoded.append("D=A\n");
 		encoded.append("@").append(staticSegmentIndex).append("\n");
@@ -153,7 +161,7 @@ public class AssemblyEncoder {
 		
 		if(index < 0 || index > 7) { throw new InvalidTempSegmentIndexException("Invalid temp segment index"); }
 		
-		encoded.append("//").append("pop ").append("temp ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("pop ").append("temp ").append(segmentIndex).append("\n");
 		encoded.append("@").append(TEMP_SEGMENT_BASE_ADDRESS).append("\n");
 		encoded.append("D=A\n");
 		encoded.append("@").append(segmentIndex).append("\n");
@@ -172,21 +180,133 @@ public class AssemblyEncoder {
 		return encoded.toString();
 	}
 	
+	public String getAddOperationEncoding() {
+		return getBinaryOperationEncoding("ADD");
+	}
+	
+	public String getSubOperationEncoding() {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// ").append("sub\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("A=M\n");
+		encoded.append("D=A-D\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("M=D\n");
+		
+		return encoded.toString();
+	}
+	
+	public String getAndOperationEncoding() {
+		return getBinaryOperationEncoding("AND");
+	}
+	
+	public String getOrOperationEncoding() {
+		return getBinaryOperationEncoding("OR");
+	}
+	
+	public String getNotOperationEncoding() {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// ").append("not").append("\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("D=M\n");
+		encoded.append("M=!D\n");
+		
+		return encoded.toString();
+	}
+	
+	public String getNegativeOperationEncoding() {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// ").append("not").append("\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("D=M\n");
+		encoded.append("M=-D\n");
+		
+		return encoded.toString();
+	}
+	
+	public String getEqualsEncoding() {
+		return getComparisonEncoding("eq");
+	}
+	
+	public String getGreatherThanEncoding() {
+		return getComparisonEncoding("gt");
+	}
+	
+	public String getLessThankEncoding() {
+		return getComparisonEncoding("lt");
+	}
+	
+	private String getComparisonEncoding(String cond) {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// ").append(cond).append("\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("A=M\n");
+		encoded.append("D=D-A\n");
+		encoded.append("@COND\n");
+		encoded.append(binaryComparisonMap.get(cond)).append("\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("M=0\n");
+		encoded.append("@END\n");
+		encoded.append("0;JMP\n");
+		encoded.append("(COND)\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append("M=-1\n");
+		encoded.append("(END)\n");
+		
+		return encoded.toString();
+	}
+	
+	private String getBinaryOperationEncoding(String op) {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// ").append(op.toLowerCase()).append("\n");
+		encoded.append("@SP\n");
+		encoded.append("M=M-1\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M\n");
+		encoded.append("D=M\n");
+		encoded.append("@SP\n");
+		encoded.append("A=M-1\n");
+		encoded.append(binaryOperationsMap.get(op)).append("\n");
+		
+		return encoded.toString();
+	}
+	
 	private String getStandardPushSegmentEncoding(String segment) {
 		StringBuilder encoded = new StringBuilder("");
 		
-		encoded.append("//").append("push ").append(getSegmentName(segment)).append(" ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("push ").append(getSegmentName(segment)).append(" ").append(segmentIndex).append("\n");
 		encoded.append("@").append(segment).append("\n");
 		encoded.append("D=M\n");
 		encoded.append("@").append(segmentIndex).append("\n");
 		encoded.append("D=D+A\n");
-		encoded.append("@D\n");
+		encoded.append("A=D\n");
 		encoded.append("D=M\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
-		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
 		
 		return encoded.toString();
@@ -194,13 +314,19 @@ public class AssemblyEncoder {
 	
 	private String _getPushPointerEncoding(String segment) {
 		StringBuilder encoded = new StringBuilder("");
+		int index = segment.equals("THIS") ? 0 : 1;
 		
-		encoded.append("//").append("push ").append("pointer ").append(segment.equals("THIS")? "0" : "1").append("\n");
+		encoded.append("// ").append("push ").append("pointer ").append(segment.equals("THIS")? "0" : "1").append("\n");
+		encoded.append("@").append(PTR_SEGMENT_BASE_ADDRESS).append("\n");
+		encoded.append("D=A\n");
+		encoded.append("@").append(index).append("\n");
+		encoded.append("D=D+A\n");
+		encoded.append("A=D\n");
+		encoded.append("D=M\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
-		encoded.append("M=").append(segment).append("\n");
+		encoded.append("M=D\n");
 		encoded.append("@SP\n");
-		encoded.append("A=M\n");
 		encoded.append("M=M+1\n");
 		
 		return encoded.toString();
@@ -209,7 +335,7 @@ public class AssemblyEncoder {
 	private String _getPopPointerEncoding(String segment) {
 		StringBuilder encoded = new StringBuilder("");
 		
-		encoded.append("//").append("pop ").append("pointer ").append(segment.equals("THIS")? "0" : "1").append("\n");
+		encoded.append("// ").append("pop ").append("pointer ").append(segment.equals("THIS")? "0" : "1").append("\n");
 		encoded.append("@SP\n");
 		encoded.append("M=M-1\n");
 		encoded.append("@SP\n");
@@ -224,7 +350,7 @@ public class AssemblyEncoder {
 	private String getStandardPopSegmentEncoding(String segment) {
 		StringBuilder encoded = new StringBuilder("");
 		
-		encoded.append("//").append("pop ").append(getSegmentName(segment)).append(" ").append(segmentIndex).append("\n");
+		encoded.append("// ").append("pop ").append(getSegmentName(segment)).append(" ").append(segmentIndex).append("\n");
 		encoded.append("@").append(segment).append("\n");
 		encoded.append("D=M\n");
 		encoded.append("@").append(segmentIndex).append("\n");
@@ -254,5 +380,21 @@ public class AssemblyEncoder {
 		}
 		
 		return segment.toLowerCase();
+	}
+	
+	private void initializeBinaryOperationsMap() {
+		binaryOperationsMap = new HashMap<>();
+		
+		binaryOperationsMap.put("ADD", "M=D+M");
+		binaryOperationsMap.put("AND", "M=D&M");
+		binaryOperationsMap.put("OR",  "M=D|M");
+	}
+
+	private void initializeBinaryComparisonMap() {
+		binaryComparisonMap = new HashMap<>();
+		
+		binaryComparisonMap.put("eq", "D;JEQ");
+		binaryComparisonMap.put("gt", "D;JGT");
+		binaryComparisonMap.put("lt", "D;JLT");
 	}
 }

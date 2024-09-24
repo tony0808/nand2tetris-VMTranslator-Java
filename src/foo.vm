@@ -1,11 +1,18 @@
-pop local 5
-pop argument 24
-pop this 2
-pop that 7
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/7/MemoryAccess/StaticTest/StaticTest.vm
 
-pop static 2
+// Executes pop and push commands using the static segment.
 
-pop pointer 0
-pop pointer 1
-
-pop temp 4
+push constant 111
+push constant 333
+push constant 888
+pop static 8
+pop static 3
+pop static 1
+push static 3
+push static 1
+sub
+push static 8
+add

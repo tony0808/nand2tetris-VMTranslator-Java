@@ -5,7 +5,7 @@ import java.util.HashMap;
 import exception.InvalidPointerSegmentIndexException;
 import exception.InvalidTempSegmentIndexException;
 
-public class AssemblyEncoder {
+public class MemoryAccessEncoder {
 	
 	private static final int STATIC_SEGMENT_BASE_ADDRESS = 16;
 	private static final int TEMP_SEGMENT_BASE_ADDRESS = 5;
@@ -16,7 +16,9 @@ public class AssemblyEncoder {
 	private HashMap<String, String> binaryOperationsMap;
 	private HashMap<String, String> binaryComparisonMap;
 	
-	public AssemblyEncoder() {
+	private int numberOfCurrentCommands = 0;
+	
+	public MemoryAccessEncoder() {
 		initializeBinaryOperationsMap();
 		initializeBinaryComparisonMap();
 	}
@@ -57,6 +59,8 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
 		
+		incrementNumberOfCurrentCommands(10);
+		
 		return encoded.toString();
 	}
 	
@@ -78,6 +82,8 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
 		
+		incrementNumberOfCurrentCommands(10);
+		
 		return encoded.toString();
 	}
 	
@@ -92,6 +98,8 @@ public class AssemblyEncoder {
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
+		
+		incrementNumberOfCurrentCommands(7);
 		
 		return encoded.toString();
 	}
@@ -142,6 +150,8 @@ public class AssemblyEncoder {
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		
+		incrementNumberOfCurrentCommands(14);
+		
 		return encoded.toString();
 	}
 	
@@ -177,6 +187,8 @@ public class AssemblyEncoder {
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		
+		incrementNumberOfCurrentCommands(14);
+		
 		return encoded.toString();
 	}
 	
@@ -201,6 +213,8 @@ public class AssemblyEncoder {
 		encoded.append("A=M-1\n");
 		encoded.append("M=D\n");
 		
+		incrementNumberOfCurrentCommands(12);
+		
 		return encoded.toString();
 	}
 	
@@ -221,6 +235,8 @@ public class AssemblyEncoder {
 		encoded.append("D=M\n");
 		encoded.append("M=!D\n");
 		
+		incrementNumberOfCurrentCommands(4);
+		
 		return encoded.toString();
 	}
 	
@@ -232,6 +248,8 @@ public class AssemblyEncoder {
 		encoded.append("A=M-1\n");
 		encoded.append("D=M\n");
 		encoded.append("M=-D\n");
+		
+		incrementNumberOfCurrentCommands(4);
 		
 		return encoded.toString();
 	}
@@ -260,19 +278,27 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("A=M-1\n");
 		encoded.append("A=M\n");
+		
+		if(binaryComparisonMap.get(cond).equals("D;JGT") || binaryComparisonMap.get(cond).equals("D;JLT")) {
+			encoded.append("A=-A\n");
+			encoded.append("D=-D\n");
+
+			incrementNumberOfCurrentCommands(2);
+		}
+		
 		encoded.append("D=D-A\n");
-		encoded.append("@COND\n");
+		encoded.append("@").append(numberOfCurrentCommands + 16).append("\n");
 		encoded.append(binaryComparisonMap.get(cond)).append("\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M-1\n");
 		encoded.append("M=0\n");
-		encoded.append("@END\n");
+		encoded.append("@").append(numberOfCurrentCommands + 19).append("\n");
 		encoded.append("0;JMP\n");
-		encoded.append("(COND)\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M-1\n");
 		encoded.append("M=-1\n");
-		encoded.append("(END)\n");
+		
+		incrementNumberOfCurrentCommands(19);
 		
 		return encoded.toString();
 	}
@@ -289,6 +315,8 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("A=M-1\n");
 		encoded.append(binaryOperationsMap.get(op)).append("\n");
+		
+		incrementNumberOfCurrentCommands(8);
 		
 		return encoded.toString();
 	}
@@ -308,6 +336,8 @@ public class AssemblyEncoder {
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
+		
+		incrementNumberOfCurrentCommands(11);
 		
 		return encoded.toString();
 	}
@@ -329,6 +359,8 @@ public class AssemblyEncoder {
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
 		
+		incrementNumberOfCurrentCommands(11);
+		
 		return encoded.toString();
 	}
 	
@@ -343,6 +375,8 @@ public class AssemblyEncoder {
 		encoded.append("D=M\n");
 		encoded.append("@").append(segment).append("\n");
 		encoded.append("M=D\n");
+		
+		incrementNumberOfCurrentCommands(7);
 		
 		return encoded.toString();
 	}
@@ -365,6 +399,8 @@ public class AssemblyEncoder {
 		encoded.append("@R13\n");
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
+		
+		incrementNumberOfCurrentCommands(14);
 		
 		return encoded.toString();
 	}
@@ -396,5 +432,9 @@ public class AssemblyEncoder {
 		binaryComparisonMap.put("eq", "D;JEQ");
 		binaryComparisonMap.put("gt", "D;JGT");
 		binaryComparisonMap.put("lt", "D;JLT");
+	}
+	
+	private void incrementNumberOfCurrentCommands(int inc) {
+		numberOfCurrentCommands += inc;
 	}
 }

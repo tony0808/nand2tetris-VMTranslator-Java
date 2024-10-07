@@ -17,7 +17,7 @@ public class CommandSpecManager {
 		SUB,
 		GT,
 		LT,
-		NEQ,
+		NEG,
 		AND,
 		NOT,
 		OR,

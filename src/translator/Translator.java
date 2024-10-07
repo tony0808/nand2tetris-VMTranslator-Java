@@ -1,7 +1,7 @@
 package translator;
 
 import fileio.FileWriter;
-import assemblyencoder.AssemblyEncoder;
+import assemblyencoder.MemoryAccessEncoder;
 import exception.InvalidPointerSegmentIndexException;
 import exception.InvalidTempSegmentIndexException;
 import fileio.FileReader;
@@ -13,13 +13,13 @@ public class Translator {
 	private Parser parser;
 	private FileReader reader;
 	private FileWriter writer;
-	private AssemblyEncoder encoder;
+	private MemoryAccessEncoder memAccessEncoder;
 	
-	public Translator(Parser parser, FileReader reader, FileWriter writer, AssemblyEncoder encoder) {
+	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder) {
 		this.parser = parser;
 		this.reader = reader;
 		this.writer = writer;
-		this.encoder = encoder;
+		this.memAccessEncoder = memAccessEncoder;
 	}
 	
 	public void translate() {
@@ -38,17 +38,17 @@ public class Translator {
 	
 	private void handleArithmeticCommand() {
 		String encoding = null;
-		
+
 		switch(parser.getArithmeticType()) {
-			case ADD: 	encoding = encoder.getAddOperationEncoding(); 		break;
-			case SUB: 	encoding = encoder.getSubOperationEncoding(); 		break;
-			case OR:  	encoding = encoder.getOrOperationEncoding(); 		break;
-			case NOT: 	encoding = encoder.getNotOperationEncoding(); 		break;
-			case AND: 	encoding = encoder.getAndOperationEncoding(); 		break;
-			case LT:  	encoding = encoder.getLessThankEncoding();			break;
-			case GT:	encoding = encoder.getGreatherThanEncoding(); 		break;
-			case NEQ: 	encoding = encoder.getNegativeOperationEncoding();  break;
-			case EQ: 	encoding = encoder.getEqualsEncoding();				break;
+			case ADD: 	encoding = memAccessEncoder.getAddOperationEncoding(); 		break;
+			case SUB: 	encoding = memAccessEncoder.getSubOperationEncoding(); 		break;
+			case OR:  	encoding = memAccessEncoder.getOrOperationEncoding(); 		break;
+			case NOT: 	encoding = memAccessEncoder.getNotOperationEncoding(); 		break;
+			case AND: 	encoding = memAccessEncoder.getAndOperationEncoding(); 		break;
+			case LT:  	encoding = memAccessEncoder.getLessThankEncoding();			break;
+			case GT:	encoding = memAccessEncoder.getGreatherThanEncoding(); 		break;
+			case NEG: 	encoding = memAccessEncoder.getNegativeOperationEncoding();  break;
+			case EQ: 	encoding = memAccessEncoder.getEqualsEncoding();				break;
 			default: 	ErrorHandler.exitErrorWithLineInfo("Uknown arithmetic type", parser.getCommandLine());
 		}
 		writer.writeLine(encoding);
@@ -66,14 +66,14 @@ public class Translator {
 		String encoding = null;
 		String index = String.valueOf(parser.getSegmentIndex());
 		
-		encoder.setSegmentIndex(index);
+		memAccessEncoder.setSegmentIndex(index);
 		
 		switch(parser.getSegmentType()) {
-			case LOCAL: 	encoding = encoder.getPushLocalEncoding(); 		break;
-			case ARGUMENT:  encoding = encoder.getPushArgumentEncoding();	break;
-			case THAT:	 	encoding = encoder.getPushThatEncoding(); 		break;
-			case THIS: 		encoding = encoder.getPushThisEncoding(); 		break;
-			case CONSTANT:  encoding = encoder.getPushConstantEncoding(); 	break;
+			case LOCAL: 	encoding = memAccessEncoder.getPushLocalEncoding(); 		break;
+			case ARGUMENT:  encoding = memAccessEncoder.getPushArgumentEncoding();	break;
+			case THAT:	 	encoding = memAccessEncoder.getPushThatEncoding(); 		break;
+			case THIS: 		encoding = memAccessEncoder.getPushThisEncoding(); 		break;
+			case CONSTANT:  encoding = memAccessEncoder.getPushConstantEncoding(); 	break;
 			case POINTER: 	encoding = handlePushPointerSegmentCase();		break;
 			case STATIC:	encoding = handlePushStaticSegmentCase(); 		break;
 			case TEMP: 	 	encoding = handlePushTempSegmentCase(); 		break;
@@ -86,13 +86,13 @@ public class Translator {
 		String encoding = null;
 		String index = String.valueOf(parser.getSegmentIndex());
 		
-		encoder.setSegmentIndex(index);
+		memAccessEncoder.setSegmentIndex(index);
 		
 		switch(parser.getSegmentType()) {
-			case LOCAL: 	encoding = encoder.getPopLocalEncoding(); 		break;
-			case ARGUMENT:  encoding = encoder.getPopArgumentEncoding(); 	break;
-			case THAT:	 	encoding = encoder.getPopThatEncoding(); 		break;
-			case THIS: 		encoding = encoder.getPopThisEncoding(); 		break;
+			case LOCAL: 	encoding = memAccessEncoder.getPopLocalEncoding(); 		break;
+			case ARGUMENT:  encoding = memAccessEncoder.getPopArgumentEncoding(); 	break;
+			case THAT:	 	encoding = memAccessEncoder.getPopThatEncoding(); 		break;
+			case THIS: 		encoding = memAccessEncoder.getPopThisEncoding(); 		break;
 			case CONSTANT:  break;
 			case POINTER: 	encoding = handlPopPointerSegmentCase(); 		break;
 			case STATIC:	encoding = handlePopStaticSegmentCase(); 		break;
@@ -105,7 +105,7 @@ public class Translator {
 	private String handlePushPointerSegmentCase() {
 		String encoding = null;
 		try {
-			encoding = encoder.getPushPointerEncoding(); 
+			encoding = memAccessEncoder.getPushPointerEncoding(); 
 		} catch(InvalidPointerSegmentIndexException e) {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}
@@ -115,7 +115,7 @@ public class Translator {
 	private String handlPopPointerSegmentCase() {
 		String encoding = null;
 		try {
-			encoding = encoder.getPopPointerEncoding();
+			encoding = memAccessEncoder.getPopPointerEncoding();
 		} catch(InvalidPointerSegmentIndexException e) {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}
@@ -126,7 +126,7 @@ public class Translator {
 		String encoding = null;
 		String fileName = writer.getFileNameWithoutExtension();
 		
-		encoding = encoder.getPushStaticEncoding(fileName);
+		encoding = memAccessEncoder.getPushStaticEncoding(fileName);
 		
 		return encoding;
 	}
@@ -135,7 +135,7 @@ public class Translator {
 		String encoding = null;
 		String fileName = writer.getFileNameWithoutExtension();
 		
-		encoding = encoder.getPopStaticEncoding(fileName);
+		encoding = memAccessEncoder.getPopStaticEncoding(fileName);
 		
 		return encoding;
 	}
@@ -143,7 +143,7 @@ public class Translator {
 	private String handlePushTempSegmentCase() {
 		String encoding = null;
 		try {
-			encoding = encoder.getPushTempEncoding();
+			encoding = memAccessEncoder.getPushTempEncoding();
 		} catch (InvalidTempSegmentIndexException e) {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}
@@ -153,7 +153,7 @@ public class Translator {
 	private String handlePopTempSegmentCase() {
 		String encoding = null;
 		try {
-			encoding = encoder.getPopTempEncoding();
+			encoding = memAccessEncoder.getPopTempEncoding();
 		} catch (InvalidTempSegmentIndexException e) {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}

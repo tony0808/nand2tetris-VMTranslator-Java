@@ -1,6 +1,7 @@
 package translator;
 
 import fileio.FileWriter;
+import assemblyencoder.ControlFlowEncoder;
 import assemblyencoder.MemoryAccessEncoder;
 import exception.InvalidPointerSegmentIndexException;
 import exception.InvalidTempSegmentIndexException;
@@ -14,12 +15,14 @@ public class Translator {
 	private FileReader reader;
 	private FileWriter writer;
 	private MemoryAccessEncoder memAccessEncoder;
+	private ControlFlowEncoder ctrlFlowEncoder;
 	
-	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder) {
+	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder, ControlFlowEncoder ctrlFlowEncoder) {
 		this.parser = parser;
 		this.reader = reader;
 		this.writer = writer;
 		this.memAccessEncoder = memAccessEncoder;
+		this.ctrlFlowEncoder = ctrlFlowEncoder;
 	}
 	
 	public void translate() {
@@ -28,6 +31,7 @@ public class Translator {
 			switch(parser.getCommandType()) {
 				case ARITHMETIC: 	handleArithmeticCommand(); break;
 				case MEMORY_ACCESS: handleMemoryAccessCommand(); break;
+				case CONTROL_FLOW:	handleControlFlowCommand();	break;
 				case COMMENT: 		break;
 				case WHITESPACE: 	break;
 				default: 			ErrorHandler.exitErrorWithLineInfo("Uknown command", parser.getCommandLine());
@@ -69,7 +73,7 @@ public class Translator {
 		memAccessEncoder.setSegmentIndex(index);
 		
 		switch(parser.getSegmentType()) {
-			case LOCAL: 	encoding = memAccessEncoder.getPushLocalEncoding(); 		break;
+			case LOCAL: 	encoding = memAccessEncoder.getPushLocalEncoding(); 	break;
 			case ARGUMENT:  encoding = memAccessEncoder.getPushArgumentEncoding();	break;
 			case THAT:	 	encoding = memAccessEncoder.getPushThatEncoding(); 		break;
 			case THIS: 		encoding = memAccessEncoder.getPushThisEncoding(); 		break;
@@ -158,5 +162,20 @@ public class Translator {
 			ErrorHandler.exitErrorWithLineInfo(e.getMessage(), parser.getCommandLine());
 		}
 		return encoding;
+	}
+	
+	private void handleControlFlowCommand() {
+		String encoding = null;
+		String label = parser.getLabel();
+		
+		ctrlFlowEncoder.setLabel(label);
+		
+		switch(parser.getControlFlowType()) {
+			case LABEL:  encoding = ctrlFlowEncoder.getLabelEncoding(); 	break;
+			case GOTO:   encoding = ctrlFlowEncoder.getGotoEncoding(); 		break;
+			case IFGOTO: encoding = ctrlFlowEncoder.getIfGotoEncoding(); 	break;
+		}
+		
+		writer.writeLine(encoding);
 	}
 }

@@ -7,6 +7,7 @@ public class CommandSpecManager {
 	public enum CommandType {
 		ARITHMETIC,
 		MEMORY_ACCESS,
+		CONTROL_FLOW,
 		COMMENT,
 		WHITESPACE,
 		UKNOWN
@@ -40,8 +41,15 @@ public class CommandSpecManager {
 		POP
 	}
 	
+	public enum ControlFlowType {
+		LABEL,
+		GOTO,
+		IFGOTO,
+	}
+	
 	private static final Set<String> ARITHM_OPERATIONS = Set.of("add", "sub", "gt", "lt", "neg", "eq", "and", "not", "or");
 	private static final Set<String> MEMACC_OPERATIONS = Set.of("push", "pop");
+	private static final Set<String> CONTROL_FLOW_OPERATIONS = Set.of("label", "goto", "if-goto");
 	private static final Set<String> MEMORY_SEGMENTS = Set.of("local", "argument", "this", "that", "temp", "pointer", "constant", "static");
 	
 	public static ArithmeticType getArithmeticType(String op) {
@@ -50,6 +58,15 @@ public class CommandSpecManager {
 	    } catch (IllegalArgumentException e) {
 	        return null;
 	    }
+	}
+	
+	public static ControlFlowType getControlFlowType(String op) {
+		try {
+			if(op.equals("if-goto")) { op = "ifgoto"; }
+			return ControlFlowType.valueOf(op.toUpperCase());
+		} catch(IllegalArgumentException e) {
+			return null;
+		}
 	}
 	
 	public static StackOperationType getStackOperationType(String op) {
@@ -78,6 +95,10 @@ public class CommandSpecManager {
 	
 	public static boolean isMemoryAccessOperationValid(String op) {
 		return MEMACC_OPERATIONS.contains(op);
+	}
+	
+	public static boolean isControlFlowOperationValid(String op) {
+		return CONTROL_FLOW_OPERATIONS.contains(op);
 	}
 	
 	public static boolean isMemorySegmentValid(String seg) {

@@ -16,7 +16,7 @@ public class MemoryAccessEncoder {
 	private HashMap<String, String> binaryOperationsMap;
 	private HashMap<String, String> binaryComparisonMap;
 	
-	private int numberOfCurrentCommands = 0;
+	protected static int numberOfCurrentCommands = 0;
 	
 	public MemoryAccessEncoder() {
 		initializeBinaryOperationsMap();

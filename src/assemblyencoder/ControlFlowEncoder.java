@@ -3,11 +3,7 @@ package assemblyencoder;
 public class ControlFlowEncoder {
 	
 	private String label;
-	
-	public ControlFlowEncoder() {
-		
-	}
-	
+
 	public void setLabel(String label) {
 		this.label = label;
 	}

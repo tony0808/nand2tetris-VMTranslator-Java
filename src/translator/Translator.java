@@ -2,6 +2,7 @@ package translator;
 
 import fileio.FileWriter;
 import assemblyencoder.ControlFlowEncoder;
+import assemblyencoder.FunctionFlowEncoder;
 import assemblyencoder.MemoryAccessEncoder;
 import exception.InvalidPointerSegmentIndexException;
 import exception.InvalidTempSegmentIndexException;
@@ -15,13 +16,15 @@ public class Translator {
 	private FileReader reader;
 	private FileWriter writer;
 	private MemoryAccessEncoder memAccessEncoder;
+	private FunctionFlowEncoder fncFlowEncoder;
 	private ControlFlowEncoder ctrlFlowEncoder;
 	
-	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder, ControlFlowEncoder ctrlFlowEncoder) {
+	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder, ControlFlowEncoder ctrlFlowEncoder, FunctionFlowEncoder fncFlowEncoder) {
 		this.parser = parser;
 		this.reader = reader;
 		this.writer = writer;
 		this.memAccessEncoder = memAccessEncoder;
+		this.fncFlowEncoder = fncFlowEncoder;
 		this.ctrlFlowEncoder = ctrlFlowEncoder;
 	}
 	
@@ -29,9 +32,10 @@ public class Translator {
 		parser.setCommand(reader.readLine());
 		while(!parser.isCommandNull()) {
 			switch(parser.getCommandType()) {
-				case ARITHMETIC: 	handleArithmeticCommand(); break;
-				case MEMORY_ACCESS: handleMemoryAccessCommand(); break;
-				case CONTROL_FLOW:	handleControlFlowCommand();	break;
+				case ARITHMETIC: 	handleArithmeticCommand(); 		break;
+				case MEMORY_ACCESS: handleMemoryAccessCommand(); 	break;
+				case CONTROL_FLOW:	handleControlFlowCommand();		break;
+				case FUNCTION_FLOW: handleFunctionFlowCommand(); 	break;
 				case COMMENT: 		break;
 				case WHITESPACE: 	break;
 				default: 			ErrorHandler.exitErrorWithLineInfo("Uknown command", parser.getCommandLine());
@@ -51,7 +55,7 @@ public class Translator {
 			case AND: 	encoding = memAccessEncoder.getAndOperationEncoding(); 		break;
 			case LT:  	encoding = memAccessEncoder.getLessThankEncoding();			break;
 			case GT:	encoding = memAccessEncoder.getGreatherThanEncoding(); 		break;
-			case NEG: 	encoding = memAccessEncoder.getNegativeOperationEncoding();  break;
+			case NEG: 	encoding = memAccessEncoder.getNegativeOperationEncoding();  	break;
 			case EQ: 	encoding = memAccessEncoder.getEqualsEncoding();				break;
 			default: 	ErrorHandler.exitErrorWithLineInfo("Uknown arithmetic type", parser.getCommandLine());
 		}
@@ -174,6 +178,21 @@ public class Translator {
 			case LABEL:  encoding = ctrlFlowEncoder.getLabelEncoding(); 	break;
 			case GOTO:   encoding = ctrlFlowEncoder.getGotoEncoding(); 		break;
 			case IFGOTO: encoding = ctrlFlowEncoder.getIfGotoEncoding(); 	break;
+		}
+		
+		writer.writeLine(encoding);
+	}
+	
+	private void handleFunctionFlowCommand() {
+		String encoding = null;
+		
+		fncFlowEncoder.setFuncName(parser.getFuncName());
+		fncFlowEncoder.setFuncNumOfVars(parser.getFuncNumOfVars());
+		
+		switch(parser.getFunctionFlowType()) {
+		case FUNCTION: 	encoding = fncFlowEncoder.getFunctionDefinitionEncoding(); break;
+		case CALL:		encoding = fncFlowEncoder.getFunctionCallEncoding(); break;
+		case RETURN:	encoding = fncFlowEncoder.getFunctionReturnEncoding(); break;
 		}
 		
 		writer.writeLine(encoding);

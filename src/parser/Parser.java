@@ -4,6 +4,7 @@ import specs.CommandSpecManager;
 import specs.CommandSpecManager.ArithmeticType;
 import specs.CommandSpecManager.CommandType;
 import specs.CommandSpecManager.ControlFlowType;
+import specs.CommandSpecManager.FunctionFlowType;
 import specs.CommandSpecManager.SegmentType;
 import specs.CommandSpecManager.StackOperationType;
 import utility.Utility;
@@ -13,12 +14,19 @@ public class Parser {
 	private String command;
 	private long commandLine;
 	
+	// parts for memory operation
 	private String memOperation;
 	private String memSegment;
 	private int segmentIndex;
 	 
+	// parts for control flow operation
 	private String ctrlFlowOperation;
 	private String label;
+	
+	// parts for function flow operation
+	private String funcFlowOperation;
+	private String funcName;
+	private int funcVars;
 	
 	public void setCommand(String command) {
 		commandLine++;
@@ -36,11 +44,12 @@ public class Parser {
 	
 	public CommandType getCommandType() {
 		
-		if(isArithmetic()) { return CommandType.ARITHMETIC; }
-		if(isMemoryAccess()) { return CommandType.MEMORY_ACCESS; }
-		if(isControlFlow()) { return CommandType.CONTROL_FLOW; }
-		if(isComment()) { return CommandType.COMMENT; }
-		if(isWhiteSpace()) { return CommandType.WHITESPACE; }
+		if(isArithmetic()) 		{ return CommandType.ARITHMETIC; 	}
+		if(isMemoryAccess()) 	{ return CommandType.MEMORY_ACCESS; }
+		if(isControlFlow()) 	{ return CommandType.CONTROL_FLOW; 	}
+		if(isFunctionFlow()) 	{ return CommandType.FUNCTION_FLOW; }
+		if(isComment()) 		{ return CommandType.COMMENT; 		}
+		if(isWhiteSpace()) 		{ return CommandType.WHITESPACE; 	}
 		
 		return CommandType.UKNOWN;
 	}
@@ -65,6 +74,18 @@ public class Parser {
 		return label;
 	}
 	
+	public String getFunctionFlowOperation() {
+		return funcFlowOperation;
+	}
+	
+	public int getFuncNumOfVars() {
+		return funcVars;
+	}
+	
+	public String getFuncName() {
+		return funcName;
+	}
+	
 	public ArithmeticType getArithmeticType() {
 		return CommandSpecManager.getArithmeticType(command);
 	}
@@ -79,6 +100,10 @@ public class Parser {
 	
 	public ControlFlowType getControlFlowType() {
 		return CommandSpecManager.getControlFlowType(ctrlFlowOperation);
+	}
+	
+	public FunctionFlowType getFunctionFlowType() {
+		return CommandSpecManager.getFunctionFlowType(funcFlowOperation);
 	}
 	
 	public long getCommandLine() {
@@ -130,6 +155,29 @@ public class Parser {
 		isControlFlow = CommandSpecManager.isControlFlowOperationValid(ctrlFlowOperation);
 		
 		return isControlFlow;
+	}
+	
+	private boolean isFunctionFlow() {
+		
+		boolean isFunctionFlow = false;
+		String[] parts;
+		
+		parts = command.split(" ");
+		
+		if(parts.length > 3) {
+			return false;
+		}
+		
+		funcFlowOperation = parts[0];
+		
+		isFunctionFlow = CommandSpecManager.isFunctionFlowOperationValid(funcFlowOperation);
+		
+		if(parts.length == 3) {
+			funcName = parts[1];
+			funcVars = Integer.valueOf(parts[2]);
+		}
+		
+		return isFunctionFlow;
 	}
 	
 	private boolean isComment() {

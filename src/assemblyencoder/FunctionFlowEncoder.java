@@ -139,7 +139,6 @@ public class FunctionFlowEncoder {
 		encoded.append("(return").append(function_count).append(")\n");
 		
 		incrementFunctionCount();
-		incrementNumberOfCurrentCommands(1);
 		
 		return encoded.toString();
 	}
@@ -155,19 +154,20 @@ public class FunctionFlowEncoder {
 	private String initializeLocalSegment() {
 		StringBuilder encoded = new StringBuilder("");
 		
-		System.out.println(MemoryAccessEncoder.numberOfCurrentCommands);
 		encoded.append("@").append(funcNumOfVars).append("\n");
 		encoded.append("D=A\n");
+		encoded.append("@").append(MemoryAccessEncoder.numberOfCurrentCommands + 12).append("\n");
+		encoded.append("D;JEQ\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
 		encoded.append("M=0\n");
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
 		encoded.append("D=D-1\n");
-		encoded.append("@").append(MemoryAccessEncoder.numberOfCurrentCommands + 2).append("\n");
+		encoded.append("@").append(MemoryAccessEncoder.numberOfCurrentCommands + 4).append("\n");
 		encoded.append("D;JGT\n");
 		
-		incrementNumberOfCurrentCommands(10);
+		incrementNumberOfCurrentCommands(12);
 		
 		return encoded.toString();
 	}

@@ -33,6 +33,10 @@ public class Translator {
 		this.reader = reader;
 	}
 	
+	public void translateWithoutBootstrapCode() {
+		handleVmCode();
+	}
+	
 	public void translate() {
 		if(isFirstFile) {
 			handleBootstrapCode();
@@ -150,7 +154,7 @@ public class Translator {
 	
 	private String handlePushStaticSegmentCase() {
 		String encoding = null;
-		String fileName = writer.getFileNameWithoutExtension();
+		String fileName = reader.getFileNameWithoutExtension();
 		
 		encoding = memAccessEncoder.getPushStaticEncoding(fileName);
 		
@@ -159,7 +163,7 @@ public class Translator {
 	
 	private String handlePopStaticSegmentCase() {
 		String encoding = null;
-		String fileName = writer.getFileNameWithoutExtension();
+		String fileName = reader.getFileNameWithoutExtension();
 		
 		encoding = memAccessEncoder.getPopStaticEncoding(fileName);
 		

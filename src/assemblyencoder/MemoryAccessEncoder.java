@@ -7,7 +7,7 @@ import exception.InvalidTempSegmentIndexException;
 
 public class MemoryAccessEncoder {
 	
-	private static final int STATIC_SEGMENT_BASE_ADDRESS = 16;
+	//private static final int STATIC_SEGMENT_BASE_ADDRESS = 16;
 	private static final int TEMP_SEGMENT_BASE_ADDRESS = 5;
 	private static final int PTR_SEGMENT_BASE_ADDRESS = 3;
 	
@@ -48,10 +48,10 @@ public class MemoryAccessEncoder {
 		String staticSegmentIndex = fileName + "." + segmentIndex;	
 		
 		encoded.append("// ").append("push ").append("static ").append(segmentIndex).append("\n");
-		encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
-		encoded.append("D=A\n");
+		//encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
+		//encoded.append("D=A\n");
 		encoded.append("@").append(staticSegmentIndex).append("\n");
-		encoded.append("A=D+A\n");
+		//encoded.append("A=D+A\n");
 		encoded.append("D=M\n");
 		encoded.append("@SP\n");
 		encoded.append("A=M\n");
@@ -59,7 +59,7 @@ public class MemoryAccessEncoder {
 		encoded.append("@SP\n");
 		encoded.append("M=M+1\n");
 		
-		incrementNumberOfCurrentCommands(10);
+		incrementNumberOfCurrentCommands(7);
 		
 		return encoded.toString();
 	}
@@ -135,10 +135,10 @@ public class MemoryAccessEncoder {
 		String staticSegmentIndex = fileName + "." + segmentIndex;
 		
 		encoded.append("// ").append("pop ").append("static ").append(segmentIndex).append("\n");
-		encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
-		encoded.append("D=A\n");
+		//encoded.append("@").append(STATIC_SEGMENT_BASE_ADDRESS).append("\n");
+		//encoded.append("D=A\n");
 		encoded.append("@").append(staticSegmentIndex).append("\n");
-		encoded.append("D=D+A\n");
+		encoded.append("D=A\n");
 		encoded.append("@R13\n");
 		encoded.append("M=D\n");
 		encoded.append("@SP\n");
@@ -150,7 +150,7 @@ public class MemoryAccessEncoder {
 		encoded.append("A=M\n");
 		encoded.append("M=D\n");
 		
-		incrementNumberOfCurrentCommands(14);
+		incrementNumberOfCurrentCommands(12);
 		
 		return encoded.toString();
 	}

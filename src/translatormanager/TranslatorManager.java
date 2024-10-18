@@ -31,7 +31,8 @@ public class TranslatorManager {
 		files = file.listFiles();
 		for(File file : files) {
 			absPath = file.getAbsolutePath();
-			reader.setReader(absPath);
+			reader.setFilePath(absPath);
+			reader.setReader();
 			translator.setReader(reader);
 			translator.translate();
 			reader.close();
@@ -41,9 +42,10 @@ public class TranslatorManager {
 	private void translateSingleFile() {
 		FileReader reader = new FileReader();
 		
-		reader.setReader(file.getAbsolutePath());
+		reader.setFilePath(file.getAbsolutePath());
+		reader.setReader();
 		translator.setReader(reader);
-		translator.translate();
+		translator.translateWithoutBootstrapCode();
 		reader.close();
 	}
 }

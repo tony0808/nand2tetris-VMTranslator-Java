@@ -17,7 +17,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		File file = new File("C:\\Users\\Admin\\eclipse-workspace\\nand2tetris-VMTranslator-Java\\src\\vmfunctions");
+		File file = new File("C:\\Users\\Admin\\eclipse-workspace\\nand2tetris-VMTranslator-Java\\src\\vmfunctions\\staticstest");
 		
 		FileWriter writer = new FileWriter("C:\\\\Users\\\\Admin\\\\eclipse-workspace\\\\nand2tetris-VMTranslator-Java\\\\src\\\\foo.asm");
 		

@@ -1,3 +1,4 @@
 bin/
 src/foo.asm
 src/foo.vm
+src/vmfunctions/

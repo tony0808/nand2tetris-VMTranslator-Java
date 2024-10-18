@@ -9,7 +9,7 @@ public class FileReader {
 	
 	private RandomAccessFile reader;
 	
-	public FileReader(String filePath) {
+	public void setReader(String filePath) {
 		File file = new File(filePath);
 		try {
 			reader = new RandomAccessFile(file, "r");

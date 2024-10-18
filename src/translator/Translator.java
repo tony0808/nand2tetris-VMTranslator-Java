@@ -18,17 +18,35 @@ public class Translator {
 	private MemoryAccessEncoder memAccessEncoder;
 	private FunctionFlowEncoder fncFlowEncoder;
 	private ControlFlowEncoder ctrlFlowEncoder;
+	private boolean isFirstFile;
 	
-	public Translator(Parser parser, FileReader reader, FileWriter writer, MemoryAccessEncoder memAccessEncoder, ControlFlowEncoder ctrlFlowEncoder, FunctionFlowEncoder fncFlowEncoder) {
+	public Translator(Parser parser, FileWriter writer, MemoryAccessEncoder memAccessEncoder, ControlFlowEncoder ctrlFlowEncoder, FunctionFlowEncoder fncFlowEncoder ) {
 		this.parser = parser;
-		this.reader = reader;
 		this.writer = writer;
 		this.memAccessEncoder = memAccessEncoder;
 		this.fncFlowEncoder = fncFlowEncoder;
 		this.ctrlFlowEncoder = ctrlFlowEncoder;
+		this.isFirstFile = true;
+	}
+	
+	public void setReader(FileReader reader) {
+		this.reader = reader;
 	}
 	
 	public void translate() {
+		if(isFirstFile) {
+			handleBootstrapCode();
+			isFirstFile = false;
+		}
+		handleVmCode();
+	}
+	
+	private void handleBootstrapCode() {
+		String bootstrapCode = fncFlowEncoder.getBootstrapEncoding();
+		writer.writeLine(bootstrapCode);
+	}
+	
+	private void handleVmCode() {
 		parser.setCommand(reader.readLine());
 		while(!parser.isCommandNull()) {
 			switch(parser.getCommandType()) {

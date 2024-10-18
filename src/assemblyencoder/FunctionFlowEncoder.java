@@ -15,6 +15,17 @@ public class FunctionFlowEncoder {
 		this.funcNumOfVars = funcNumOfVars;
 	}
 	
+	public String getBootstrapEncoding() {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("// Bootstrap code\n");
+		encoded.append(stackPointerInitializationEncoding());
+		setFuncName("Sys.init");
+		encoded.append(getFunctionCallEncoding());
+		
+		return encoded.toString();
+	}
+	
 	public String getFunctionCallEncoding() {
 		StringBuilder encoded = new StringBuilder("");
 		
@@ -55,6 +66,19 @@ public class FunctionFlowEncoder {
 		encoded.append(restoreSegment("ARG", 3));
 		encoded.append(restoreSegment("LCL", 4));
 		encoded.append(gotoReturnAddress());
+		
+		return encoded.toString();
+	}
+	
+	private String stackPointerInitializationEncoding() {
+		StringBuilder encoded = new StringBuilder("");
+		
+		encoded.append("@256\n");
+		encoded.append("D=A\n");
+		encoded.append("@SP\n");
+		encoded.append("M=D\n");
+		
+		incrementNumberOfCurrentCommands(4);
 		
 		return encoded.toString();
 	}
